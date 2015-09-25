@@ -1,17 +1,37 @@
 package com.kiwinumba.uapv1301804.meteoandroid;
 
-import android.app.Activity;
+import android.app.ListActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
-public class MainActivity extends Activity {
+
+import java.util.ArrayList;
+
+/**
+ * Permet de directement créer une activity qui fait une liste.
+ */
+public class MainActivity extends ListActivity {
+
+    private ArrayList<City> listCity = new ArrayList<City>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
+        //On rajoute des villes dans la liste de ville
+        listCity.add(new City("Brest", "France"));
+        listCity.add(new City("Marseille", "France"));
+        listCity.add(new City("Montreal", "Canada"));
+        listCity.add(new City("Istanbul", "Turkey"));
+        listCity.add(new City("Seoul", "Korea"));
+
+        ArrayAdapter<City> cityArrayAdapter = new ArrayAdapter<City>(this,android.R.layout.simple_list_item_1,android.R.id.text1,listCity);
+        setListAdapter(cityArrayAdapter);
+
     }
 
     @Override

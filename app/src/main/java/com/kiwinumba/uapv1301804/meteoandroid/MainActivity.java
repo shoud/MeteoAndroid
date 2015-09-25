@@ -1,10 +1,12 @@
 package com.kiwinumba.uapv1301804.meteoandroid;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -32,6 +34,8 @@ public class MainActivity extends ListActivity {
         ArrayAdapter<City> cityArrayAdapter = new ArrayAdapter<City>(this,android.R.layout.simple_list_item_1,android.R.id.text1,listCity);
         setListAdapter(cityArrayAdapter);
 
+
+
     }
 
     @Override
@@ -54,5 +58,16 @@ public class MainActivity extends ListActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id)
+    {
+        Intent intent = new Intent(this, CityView.class);
+        //Récupération de la ville choisie
+        City city = listCity.get(position);
+        //Permet d'envoyer la ville à la nouvelle activity
+        intent.putExtra("InfoCity",city);
+        //Lancement de l'activity pour afficher les infos
+        startActivity(intent);
     }
 }

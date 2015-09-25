@@ -1,9 +1,11 @@
 package com.kiwinumba.uapv1301804.meteoandroid;
 
+import java.io.Serializable;
+
 /**
  * Classe permettant de représenter des villes
  */
-public class City
+public class City implements Serializable
 {
     //Le nom de la ville
     private String nom;

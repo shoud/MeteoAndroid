@@ -1,12 +1,16 @@
 package com.kiwinumba.uapv1301804.meteoandroid;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -31,8 +35,35 @@ public class MainActivity extends ListActivity {
         listCity.add(new City("Istanbul", "Turkey"));
         listCity.add(new City("Seoul", "Korea"));
 
+        //Création de l'affichage des villes
         ArrayAdapter<City> cityArrayAdapter = new ArrayAdapter<City>(this,android.R.layout.simple_list_item_1,android.R.id.text1,listCity);
         setListAdapter(cityArrayAdapter);
+
+        //Permet de supprimer une ville
+        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l)
+            {
+                final City city = listCity.get(i);
+
+                new AlertDialog.Builder(MainActivity.this).setTitle("Suppression")
+                        .setMessage("Voulez vous supprimer " + city.getNom() + " ?")
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int whichButton)
+                            {
+                                //Suppression de la ville dans la liste
+                                listCity.remove(city);
+                                //Rafraichissement de la liste
+                                ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
+                            }
+                        }).setNegativeButton(android.R.string.no, null).show();
+                return true;
+            }
+        });
 
 
 

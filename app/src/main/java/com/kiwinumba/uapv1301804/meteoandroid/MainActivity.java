@@ -22,6 +22,7 @@ import java.util.ArrayList;
  */
 public class MainActivity extends ListActivity {
 
+    //Liste des villes
     private ArrayList<City> listCity = new ArrayList<City>();
 
     @Override
@@ -39,17 +40,21 @@ public class MainActivity extends ListActivity {
         ArrayAdapter<City> cityArrayAdapter = new ArrayAdapter<City>(this,android.R.layout.simple_list_item_1,android.R.id.text1,listCity);
         setListAdapter(cityArrayAdapter);
 
-        //Permet de supprimer une ville
+        //Permet de supprimer une ville et détectant un clique long
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
         {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l)
             {
+                //Récupération de la ville choisie
                 final City city = listCity.get(i);
-
+                //On créer une boite de dialogue
                 new AlertDialog.Builder(MainActivity.this).setTitle("Suppression")
+                        //Le message de la boite de dialogue
                         .setMessage("Voulez vous supprimer " + city.getNom() + " ?")
+                        //L'icone de la boite de dialogue
                         .setIcon(android.R.drawable.ic_dialog_alert)
+                        //Le bouton ok
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
                         {
                             @Override
@@ -59,14 +64,12 @@ public class MainActivity extends ListActivity {
                                 listCity.remove(city);
                                 //Rafraichissement de la liste
                                 ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
+                                //Le bouton annuler on quite la boite de dialogue
                             }
                         }).setNegativeButton(android.R.string.no, null).show();
                 return true;
             }
         });
-
-
-
     }
 
     @Override
@@ -90,9 +93,18 @@ public class MainActivity extends ListActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    /**
+     * Détection d'un simple clique sur une ville
+     * @param l
+     * @param v
+     * @param position
+     * @param id
+     */
     @Override
     public void onListItemClick(ListView l, View v, int position, long id)
     {
+        //Préparation à la création d'une activity
         Intent intent = new Intent(this, CityView.class);
         //Récupération de la ville choisie
         City city = listCity.get(position);

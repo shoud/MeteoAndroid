@@ -1,17 +1,62 @@
 package com.kiwinumba.uapv1301804.meteoandroid;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Toast;
 
 public class AddCityActivity extends Activity {
+
+    String ville = null;
+    String pays = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_city);
+    }
+
+    /**
+     * Méthode lancé lors de l'appui sur le bouton sauvegarder
+     * @param view
+     */
+    public void sauvegarder(View view)
+    {
+        //Récupération de la ville
+        EditText editText = (EditText)findViewById(R.id.eTVille);
+        ville = editText.getText().toString();
+        //Récupératiton du pays
+        editText = (EditText)findViewById(R.id.eTPays);
+        pays = editText.getText().toString();
+        //Vérification d'un nom de ville présent
+        if(ville.isEmpty())
+            //Si pas de nom on affiche un message
+            Toast.makeText(getApplicationContext(), "Pas de nom de ville", Toast.LENGTH_SHORT).show();
+        //Vérification d'un nom de pays présent
+        else if(pays.isEmpty())
+            //Si pas de nom de pays on affiche un méssage
+            Toast.makeText(getApplicationContext(), "Pas de Pays", Toast.LENGTH_SHORT).show();
+        else
+        {
+            //Création du nouveau objet ville
+            City city = new City(ville, pays);
+            //Création de l'objet à retourner
+            Intent intent = new Intent();
+            //On retourne l'objet city
+            intent.putExtra("VilleAjouter", city);
+            //On dit que la requet est ok
+            setResult(Activity.RESULT_OK, intent);
+            //Fermeture de l'activity
+            finish();
+        }
     }
 
     @Override

@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 
 import java.util.ArrayList;
@@ -24,7 +25,8 @@ public class MainActivity extends ListActivity {
 
     //Liste des villes
     private ArrayList<City> listCity = new ArrayList<City>();
-
+    //Le code de la requête d'ajouter un résulta
+    static final int PICK_AJOUTER_REQUEST = 36;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,9 +91,50 @@ public class MainActivity extends ListActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }else if(id == R.id.ajouter)
+        {
+            //Préparation à la création d'une activity
+            Intent intent = new Intent(this, AddCityActivity.class);
+            //Lancement de l'activity en signifiant qu'elle donne un résulat
+            startActivityForResult(intent, PICK_AJOUTER_REQUEST);
         }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * La méthode permettant de récupérer le résulat d'une activity
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //Si on récupérer les données de l'activity Ajouter.
+        if (requestCode == PICK_AJOUTER_REQUEST) {
+            //On vérifie si la requet c'est bien passé
+            if (resultCode == RESULT_OK) {
+                City city = (City)data.getSerializableExtra("VilleAjouter");
+                //On vérifie si la ville n'a pas déjà été ajouté
+                for(int i=0; i<listCity.size(); i++)
+                    //Si la ville est déjà dans la liste
+                    if(listCity.get(i).getNom().toLowerCase().equals(city.getNom().toLowerCase()))
+                    {
+                        //Si le pays est le même
+                        if(listCity.get(i).getPays().toLowerCase().equals(city.getPays().toLowerCase()))
+                        {
+                            //Message signifiant à l'utilisateur que la ville est déjà présente
+                            Toast.makeText(getApplicationContext(), "La ville existe déjà", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+                //On rajoute la nouvelle ville à la liste de ville
+                listCity.add(city);
+                //On rafraichie la liste de ville
+                ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
+                //Affichage à l'utilisateur que la ville a bien été ajouté
+                Toast.makeText(getApplicationContext(), city.getNom() + " de " + city.getPays() + " ajouté", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     /**

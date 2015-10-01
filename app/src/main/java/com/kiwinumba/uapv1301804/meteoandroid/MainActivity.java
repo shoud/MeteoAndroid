@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,7 +17,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Permet de directement créer une activity qui fait une liste.
@@ -98,6 +101,11 @@ public class MainActivity extends ListActivity {
             //Lancement de l'activity en signifiant qu'elle donne un résulat
             startActivityForResult(intent, PICK_AJOUTER_REQUEST);
         }
+        else if(id == R.id.rafraichir)
+        {
+            //On lance le téléchargement des donnée en tache de fond
+            new RafraichirTask().execute(listCity);
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -131,6 +139,8 @@ public class MainActivity extends ListActivity {
                 listCity.add(city);
                 //On rafraichie la liste de ville
                 ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
+                //On met à jour les valeurs
+                new RafraichirTask().execute(listCity);
                 //Affichage à l'utilisateur que la ville a bien été ajouté
                 Toast.makeText(getApplicationContext(), city.getNom() + " de " + city.getPays() + " ajouté", Toast.LENGTH_SHORT).show();
             }
@@ -155,5 +165,30 @@ public class MainActivity extends ListActivity {
         intent.putExtra("InfoCity",city);
         //Lancement de l'activity pour afficher les infos
         startActivity(intent);
+    }
+
+   private class RafraichirTask extends AsyncTask<List<City>, Void, Void>
+    {
+        /**
+         * Permet de dire ce qu'il faut faire en tache de fond
+         * @param villes
+         * @return
+         */
+        @Override
+        protected Void doInBackground(List<City>... villes)
+        {
+            //Mise à jour des informations dans la liste de ville
+            MeteoUpDate.upDateInfo(villes[0]);
+            return null;
+        }
+
+        /**
+         * Permet d'afficher un message quand la mise à jour est finie
+         * @param rien
+         */
+        @Override
+        protected void onPostExecute(Void rien) {
+            Toast.makeText(getApplicationContext(), "Les donnée ont été mise à jour", Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -28,45 +28,34 @@ public class CityView extends Activity {
      */
     private void setInfo(City city)
     {
+        //Récupération du TextView du nom de la ville
         TextView textView = (TextView)findViewById(R.id.tvVille);
+        //Mise à jour du nom de la ville
         textView.setText(city.getNom());
 
+        //Récupération du TextView du nom du pays
         textView = (TextView)findViewById(R.id.tvPays);
+        //Mise à jour du nom du pays
         textView.setText(city.getPays());
 
+        //Récupération du TextView de la vitesse et du sens du vent
         textView = (TextView)findViewById(R.id.tvVent);
+        //Mise à jour de la vitesse et de la direction du vent
         textView.setText(city.getVitesseVent());
 
+        //Récupération du TextView de la pression
         textView = (TextView)findViewById(R.id.tvPression);
-        textView.setText(city.getPression() + " hPa");
+        //Mise à jour de la pression
+        textView.setText(city.getPression());
 
+        //Récupération du TextView de la température
         textView = (TextView)findViewById(R.id.tvTemp);
-        textView.setText(city.getTempAir() + " °C");
+        //Mise à jour de la température
+        textView.setText(city.getTempAir());
 
+        //Récupération du TextView de la date
         textView = (TextView)findViewById(R.id.tvDate);
+        //Mise à jour de la date
         textView.setText(city.getDate());
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_city_view, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }

@@ -34,7 +34,6 @@ public class City implements Serializable
         this.pays = pays;
         this.date = null;
         this.vitesseVent = null;
-        this.directionvent = null;
         this.pression = null;
         this.tempAir = null;
     }
@@ -42,13 +41,11 @@ public class City implements Serializable
     public String getPays(){return pays;}
     public String getDate(){return date;}
     public String getVitesseVent(){return vitesseVent;}
-    public String getDirectionvent(){return directionvent;}
     public String getPression(){return pression;}
     public String getTempAir(){return tempAir;}
 
     public void setDate(String date){this.date = date;}
     public void setVitesseVent(String vitesseVent){this.vitesseVent = vitesseVent;}
-    public void setDirectionvent(String directionvent){this.directionvent = directionvent;}
     public void setPression(String pression){this.pression = pression;}
     public void setTempAir(String tempAir){this.tempAir = tempAir;}
 

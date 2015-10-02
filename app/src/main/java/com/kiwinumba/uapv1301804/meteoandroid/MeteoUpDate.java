@@ -16,10 +16,11 @@ import java.util.List;
  */
 public class MeteoUpDate
 {
-    //L'adresse du service web
+    //L'adresse du service web avec le format de la requete
     public static final String URLServiceWeb = "http://www.webservicex.net/globalweather.asmx/GetWeather?CityName=%s&CountryName=%s";
     //L'encodage utilisé
     private static final String encodage = "UTF-8";
+    //Enum pour rendre plus claire la lecture du tableau de données
     private enum Donnee{VENT, TEMP, PRESSION, DATE}
 
     /**
@@ -66,15 +67,20 @@ public class MeteoUpDate
                 }
 
             }
-            catch (IOException e) {
+            catch (IOException e)
+            {
+                //Affichage de l'érreur dans le log
                 Log.e("Service Erreur : ", city + " : " + e.toString());
             }
 
-            try {
+            try
+            {
                 if (inputStream != null)
                     inputStream.close();
             }
-            catch (IOException e) {
+            catch (IOException e)
+            {
+                //Affichage de l'érreur dans le log
                 Log.e("Service Erreur :", city + " : " + e.toString());
             }
         }

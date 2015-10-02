@@ -13,9 +13,14 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Toast;
 
+/**
+ * Classe permettant de rajouter une ville
+ */
 public class AddCityActivity extends Activity {
 
+    //Le nom de la ville
     String ville = null;
+    //Le nom du pays où réside la ville
     String pays = null;
 
     @Override

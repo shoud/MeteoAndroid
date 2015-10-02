@@ -8,6 +8,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+/**
+ * Classe permettant d'afficher les informations météo d'une ville
+ */
 public class CityView extends Activity {
 
     @Override

@@ -1,6 +1,7 @@
 package com.kiwinumba.uapv1301804.meteoandroid;
 
 import android.app.AlertDialog;
+import android.app.IntentService;
 import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -99,7 +100,12 @@ public class MainActivity extends ListActivity {
         else if(id == R.id.rafraichir)
         {
             //On lance le téléchargement des donnée en tache de fond
-            new RafraichirTask().execute(listCity);
+            //new RafraichirTask().execute(listCity);
+            Intent mServiceIntent = new Intent(this, MeteoUpDate.class);
+            mServiceIntent.putExtra("Ville",listCity.get(0));
+
+
+            startService(mServiceIntent);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -135,7 +141,7 @@ public class MainActivity extends ListActivity {
                 //On rafraichie la liste de ville
                 ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
                 //On met à jour les valeurs
-                new RafraichirTask().execute(listCity);
+                //new RafraichirTask().execute(listCity);
                 //Affichage à l'utilisateur que la ville a bien été ajouté
                 Toast.makeText(getApplicationContext(), city.getNom() + " de " + city.getPays() + " ajouté", Toast.LENGTH_SHORT).show();
             }
@@ -161,14 +167,24 @@ public class MainActivity extends ListActivity {
         //Lancement de l'activity pour afficher les infos
         startActivity(intent);
     }
-
-   private class RafraichirTask extends AsyncTask<List<City>, Void, Void>
+    /*
+   private class RafraichirService extends IntentService
     {
-        /**
-         * Permet de dire ce qu'il faut faire en tache de fond
-         * @param villes
-         * @return
-         */
+        public RafraichirService()
+        {
+            super("RafraichirService");
+        }
+
+        @Override
+        protected void onHandleIntent(Intent intent)
+        {
+            Toast.makeText(getApplicationContext(), "Avant la mise à jour", Toast.LENGTH_SHORT).show();
+            MeteoUpDate.upDateInfo(listCity.get(0));
+            Toast.makeText(getApplicationContext(), "Après la mise à jour", Toast.LENGTH_SHORT).show();
+        }
+
+
+
         @Override
         protected Void doInBackground(List<City>... villes)
         {
@@ -177,13 +193,10 @@ public class MainActivity extends ListActivity {
             return null;
         }
 
-        /**
-         * Permet d'afficher un message quand la mise à jour est finie
-         * @param rien
-         */
+
         @Override
         protected void onPostExecute(Void rien) {
             Toast.makeText(getApplicationContext(), "Les donnée ont été mise à jour", Toast.LENGTH_SHORT).show();
         }
-    }
+    }*/
 }

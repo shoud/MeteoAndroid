@@ -26,6 +26,9 @@
             android:name=".AddCityActivity"
             android:label="@string/title_activity_add_city" >
         </activity>
+        <service
+            android:name=".MeteoUpDate"
+            android:exported="false"/>
     </application>
 
 </manifest>

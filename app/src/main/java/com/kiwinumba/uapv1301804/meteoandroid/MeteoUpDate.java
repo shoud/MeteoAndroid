@@ -43,6 +43,7 @@ public class MeteoUpDate extends IntentService
         URL url;
         URLConnection urlConnection;
         InputStream inputStream = null;
+        CityDAO cityDAO = new CityDAO(getApplicationContext());
 
         try
         {
@@ -76,6 +77,7 @@ public class MeteoUpDate extends IntentService
                 //Mise à jour de la date
                 city.setDate(infos.get(Donnee.DATE.ordinal()));
                 Log.i("MeteoUpDate", "Date = " + infos.get(Donnee.DATE.ordinal()));
+                cityDAO.modifier(city);
             }
 
         }

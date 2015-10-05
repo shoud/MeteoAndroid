@@ -24,19 +24,13 @@ public class MainActivity extends ListActivity {
 
     //Liste des villes
     private ArrayList<City> listCity = new ArrayList<City>();
+    //Permet d'acceder à la base de donnée
+    //private CityDAO cityDAO;// = new CityDAO(getApplicationContext());
     //Le code de la requête d'ajouter un résulta
     static final int PICK_AJOUTER_REQUEST = 36;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //On rajoute des villes dans la liste de ville
-        listCity.add(new City("Brest", "France"));
-        listCity.add(new City("Marseille", "France"));
-        listCity.add(new City("Montreal", "Canada"));
-        listCity.add(new City("Istanbul", "Turkey"));
-        listCity.add(new City("Seoul", "Korea"));
-
         //Création de l'affichage des villes
         ArrayAdapter<City> cityArrayAdapter = new ArrayAdapter<City>(this,android.R.layout.simple_list_item_1,android.R.id.text1,listCity);
         setListAdapter(cityArrayAdapter);
@@ -61,6 +55,8 @@ public class MainActivity extends ListActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int whichButton)
                             {
+                                //Supression de la ville dans la base de donnée
+                                //cityDAO.supprimer(city);
                                 //Suppression de la ville dans la liste
                                 listCity.remove(city);
                                 //Rafraichissement de la liste

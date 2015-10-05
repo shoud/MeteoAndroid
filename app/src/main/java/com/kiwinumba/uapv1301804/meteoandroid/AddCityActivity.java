@@ -22,6 +22,8 @@ public class AddCityActivity extends Activity {
     String ville = null;
     //Le nom du pays où réside la ville
     String pays = null;
+    //Permet de faire des enregistrement dans la base de donnée
+    CityDAO cityDAO;// = new CityDAO(getApplicationContext());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +55,11 @@ public class AddCityActivity extends Activity {
         {
             //Création du nouveau objet ville
             City city = new City(ville, pays);
+            //Enregistrement du nouvelle objet dans la base de donnée
+            cityDAO = new CityDAO(getApplicationContext());
+            cityDAO.open();
+            cityDAO.ajouter(city);
+            cityDAO.close();
             //Création de l'objet à retourner
             Intent intent = new Intent();
             //On retourne l'objet city

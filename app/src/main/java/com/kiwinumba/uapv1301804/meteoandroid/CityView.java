@@ -13,6 +13,8 @@ import android.widget.TextView;
  */
 public class CityView extends Activity {
 
+    CityDAO cityDAO = new CityDAO(getApplicationContext());
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +33,8 @@ public class CityView extends Activity {
      */
     private void setInfo(City city)
     {
+        //Récupération des informations dans la base de donnée
+        city = cityDAO.selectionner(city);
         //Récupération du TextView du nom de la ville
         TextView textView = (TextView)findViewById(R.id.tvVille);
         //Mise à jour du nom de la ville

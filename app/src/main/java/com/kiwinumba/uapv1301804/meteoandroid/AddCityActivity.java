@@ -1,15 +1,11 @@
 package com.kiwinumba.uapv1301804.meteoandroid;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -23,7 +19,7 @@ public class AddCityActivity extends Activity {
     //Le nom du pays où réside la ville
     String pays = null;
     //Permet de faire des enregistrement dans la base de donnée
-    CityDAO cityDAO;// = new CityDAO(getApplicationContext());
+    CityBDD cityBDD;// = new CityDAO(getApplicationContext());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +52,10 @@ public class AddCityActivity extends Activity {
             //Création du nouveau objet ville
             City city = new City(ville, pays);
             //Enregistrement du nouvelle objet dans la base de donnée
-            cityDAO = new CityDAO(getApplicationContext());
-            cityDAO.open();
-            cityDAO.ajouter(city);
-            cityDAO.close();
+            cityBDD = new CityBDD(getApplicationContext());
+            cityBDD.open();
+            cityBDD.ajouter(city);
+            cityBDD.close();
             //Création de l'objet à retourner
             Intent intent = new Intent();
             //On retourne l'objet city

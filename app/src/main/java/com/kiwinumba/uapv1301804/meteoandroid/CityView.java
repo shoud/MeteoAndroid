@@ -2,10 +2,7 @@ package com.kiwinumba.uapv1301804.meteoandroid;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.TextView;
 
 /**
@@ -13,7 +10,7 @@ import android.widget.TextView;
  */
 public class CityView extends Activity {
 
-    CityDAO cityDAO = new CityDAO(getApplicationContext());
+    CityBDD cityBDD = new CityBDD(getApplicationContext());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +31,7 @@ public class CityView extends Activity {
     private void setInfo(City city)
     {
         //Récupération des informations dans la base de donnée
-        city = cityDAO.selectionner(city);
+        city = cityBDD.selectionner(city);
         //Récupération du TextView du nom de la ville
         TextView textView = (TextView)findViewById(R.id.tvVille);
         //Mise à jour du nom de la ville

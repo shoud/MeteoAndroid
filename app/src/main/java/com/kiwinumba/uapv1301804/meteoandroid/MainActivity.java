@@ -23,17 +23,22 @@ import java.util.List;
 public class MainActivity extends ListActivity {
 
     //Liste des villes
-    private ArrayList<City> listCity = new ArrayList<City>();
+    private ArrayList<City> listCity;
     //Permet d'acceder à la base de donnée
-    //private CityDAO cityDAO;// = new CityDAO(getApplicationContext());
+    private CityBDD cityBDD;
     //Le code de la requête d'ajouter un résulta
     static final int PICK_AJOUTER_REQUEST = 36;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        cityBDD = new CityBDD(this);
+        cityBDD.open();
+        listCity = cityBDD.selectionnerAll();
         //Création de l'affichage des villes
         ArrayAdapter<City> cityArrayAdapter = new ArrayAdapter<City>(this,android.R.layout.simple_list_item_1,android.R.id.text1,listCity);
         setListAdapter(cityArrayAdapter);
+        cityBDD.close();
 
         //Permet de supprimer une ville et détectant un clique long
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
@@ -56,7 +61,9 @@ public class MainActivity extends ListActivity {
                             public void onClick(DialogInterface dialog, int whichButton)
                             {
                                 //Supression de la ville dans la base de donnée
-                                //cityDAO.supprimer(city);
+                                cityBDD.open();
+                                cityBDD.supprimer(city);
+                                cityBDD.close();
                                 //Suppression de la ville dans la liste
                                 listCity.remove(city);
                                 //Rafraichissement de la liste
@@ -134,6 +141,10 @@ public class MainActivity extends ListActivity {
                     }
                 //On rajoute la nouvelle ville à la liste de ville
                 listCity.add(city);
+                //On rajoute la nouvelle ville dans la base de donnée
+                cityBDD.open();
+                cityBDD.ajouter(city);
+                cityBDD.close();
                 //On rafraichie la liste de ville
                 ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
                 //On met à jour les valeurs

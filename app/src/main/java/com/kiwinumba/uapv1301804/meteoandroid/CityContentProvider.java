@@ -22,7 +22,7 @@ public class CityContentProvider extends ContentProvider
     static final String PROVIDER_NAME = "com.kiwinumba.uapv1301804.provider.meteoandroid";
     public static final Uri CONTENT_URI = new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
             .authority(PROVIDER_NAME)
-            .appendEncodedPath(WeatherDatabase.TABLE_WEATHER)
+            .appendEncodedPath(Bdd.CITY_TABLE_NAME)
             .build();
 
     // fields for the database

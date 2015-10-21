@@ -11,43 +11,30 @@ import android.util.Log;
  */
 public class Bdd extends SQLiteOpenHelper
 {
-    public static final String CITY_KEY = "id";
-    public static final String CITY_NOM = "nom";
-    public static final String CITY_PAYS = "pays";
-    public static final String CITY_VENT = "vent";
-    public static final String CITY_TEMP = "temperature";
-    public static final String CITY_PRES = "pression";
-    public static final String CITY_DATE = "date";
 
-    public static final String CITY_TABLE_NAME = "City";
-    public static final String CITY_TABLE_CREATE =
-            "CREATE TABLE IF NOT EXISTS " + CITY_TABLE_NAME + "("
-                    + CITY_KEY + " INTEGER PRIMARY KEY,"
-                    + CITY_NOM + " TEXT,"
-                    + CITY_PAYS + " TEXT,"
-                    + CITY_VENT + " TEXT,"
-                    + CITY_TEMP + " TEXT,"
-                    + CITY_PRES + " TEXT,"
-                    + CITY_DATE + " TEXT,"
-                    + "UNIQUE(" + CITY_NOM + "," + CITY_PAYS + ")"
-                    + ")";
-    public static final String CITY_TABLE_DROP = "DROP TABLE IF EXISTS " + CITY_TABLE_NAME + ";";
+    //Le nom de la base de données
+    private static final String DATABASE_NAME = "kiwinumba.db";
+    //La version de la base
+    private static final int DATABASE_VERSION = 1;
 
-    public Bdd(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
-        super(context, name, factory, version);
+    /**
+     * Constructeur pour la base de donnée
+     * @param context le context de l'application
+     */
+    public Bdd(Context context)
+    {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CITY_TABLE_CREATE);
-        Log.i("BDD", "Construction de la table");
+    public void onCreate(SQLiteDatabase database)
+    {
+        CityBDD.onCreate(database);
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(CITY_TABLE_DROP);
-        Log.i("BDD", "Destruction de la table");
-        onCreate(db);
+    public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion)
+    {
+        CityBDD.onUpgrade(database, oldVersion, newVersion);
     }
-
 }

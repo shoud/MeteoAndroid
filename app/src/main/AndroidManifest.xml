@@ -30,10 +30,9 @@
             android:name=".MeteoUpDate"
             android:exported="false"/>
         <provider
-            android:authorities="com.kiwinumba.uapv1301804.provider.meteoandroid"
-            android:name=".contentprovider.meteoAndroidProvider" >
+            android:name=".CityContentProvider"
+            android:authorities="com.kiwinumba.uapv1301804.provider.meteoandroid" >
         </provider>
-
     </application>
 
 </manifest>

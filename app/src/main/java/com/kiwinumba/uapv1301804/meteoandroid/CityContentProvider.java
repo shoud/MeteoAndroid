@@ -8,14 +8,16 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.text.TextUtils;
+
+import java.util.Arrays;
+import java.util.HashSet;
 
 
 public class CityContentProvider extends ContentProvider
 {
 
     //Lien util http://www.tutos-android.com/contentprovider-android
-    //private DatabaseHelper dbHelper;
-
     //La base de donnnées
     private Bdd bdd;
     //Utilisé pour le UriMacher
@@ -41,21 +43,6 @@ public class CityContentProvider extends ContentProvider
     }
 
 
-    public String getCity(Uri url)
-    {
-        int match = sURIMatcher.match(url);
-        switch (match)
-        {
-            case WEATHER:
-                return "vnd.android.cursor.dir/weather";
-            case WEATHER_PAYS_VILLE:
-                return "vnd.android.cursor.item/weather";
-            default:
-                return null;
-        }
-    }
-
-
     @Override
     public boolean onCreate()
     {
@@ -69,7 +56,7 @@ public class CityContentProvider extends ContentProvider
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         checkColumns(projection);
 
-        queryBuilder.setTables(Bdd.CITY_TABLE_NAME);
+        queryBuilder.setTables(CityBDD.CITY_TABLE_NAME);
 
         int uriType = sURIMatcher.match(uri);
         switch (uriType) {
@@ -77,7 +64,7 @@ public class CityContentProvider extends ContentProvider
                 break;
             case WEATHER_PAYS_VILLE:
                 // adding the ID to the original query
-                queryBuilder.appendWhere(Bdd.COLUMN_ID + "="
+                queryBuilder.appendWhere(CityBDD.CITY_KEY + "="
                         + uri.getLastPathSegment());
                 break;
             default:
@@ -99,17 +86,105 @@ public class CityContentProvider extends ContentProvider
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
-        return null;
+    public Uri insert(Uri uri, ContentValues values)
+    {
+        int uriType = sURIMatcher.match(uri);
+        SQLiteDatabase sqlDB = bdd.getWritableDatabase();
+        int rowsDeleted = 0;
+        long id = 0;
+        switch (uriType) {
+            case WEATHER:
+                id = sqlDB.insert(CityBDD.CITY_TABLE_NAME, null, values);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown URI: " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return Uri.parse(BASE_PATH + "/" + id);
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+    public int delete(Uri uri, String selection, String[] selectionArgs)
+    {
+        int uriType = sURIMatcher.match(uri);
+        SQLiteDatabase sqlDB = bdd.getWritableDatabase();
+        int rowsDeleted = 0;
+        switch (uriType) {
+            case WEATHER:
+                rowsDeleted = sqlDB.delete(CityBDD.CITY_TABLE_NAME, selection,
+                        selectionArgs);
+                break;
+            case WEATHER_PAYS_VILLE:
+                String id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsDeleted = sqlDB.delete(CityBDD.CITY_TABLE_NAME,
+                            CityBDD.CITY_KEY + "=" + id,
+                            null);
+                } else {
+                    rowsDeleted = sqlDB.delete(CityBDD.CITY_TABLE_NAME,
+                            CityBDD.CITY_KEY + "=" + id
+                                    + " and " + selection,
+                            selectionArgs);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown URI: " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return rowsDeleted;
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs)
+    {
+        int uriType = sURIMatcher.match(uri);
+        SQLiteDatabase sqlDB = bdd.getWritableDatabase();
+        int rowsUpdated = 0;
+        switch (uriType) {
+            case WEATHER:
+                rowsUpdated = sqlDB.update(CityBDD.CITY_TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs);
+                break;
+            case WEATHER_PAYS_VILLE:
+                String id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsUpdated = sqlDB.update(CityBDD.CITY_TABLE_NAME,
+                            values,
+                            CityBDD.CITY_KEY + "=" + id,
+                            null);
+                } else {
+                    rowsUpdated = sqlDB.update(CityBDD.CITY_TABLE_NAME,
+                            values,
+                            CityBDD.CITY_KEY + "=" + id
+                                    + " and "
+                                    + selection,
+                            selectionArgs);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown URI: " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return rowsUpdated;
+    }
+
+    private void checkColumns(String[] projection) {
+        String[] available = { CityBDD.CITY_KEY,
+                CityBDD.CITY_NOM,
+                CityBDD.CITY_PAYS,
+                CityBDD.CITY_VENT,
+                CityBDD.CITY_TEMP,
+                CityBDD.CITY_PRES,
+                CityBDD.CITY_DATE};
+        if (projection != null) {
+            HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
+            HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
+            // check if all columns which are requested are available
+            if (!availableColumns.containsAll(requestedColumns)) {
+                throw new IllegalArgumentException("Unknown columns in projection");
+            }
+        }
     }
 }

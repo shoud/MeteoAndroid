@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -12,29 +13,23 @@ import java.util.ArrayList;
  */
 public class CityBDD
 {
-    private static final int VERSION_BDD = 1;
-    private static final String NOM_BDD = "meteoVille.db";
 
-    private static final String CITY_KEY = "id";
+    public static final String CITY_KEY = "id";
     private static final int NUM_COL_ID = 0;
-    private static final String CITY_NOM = "nom";
+    public static final String CITY_NOM = "nom";
     private static final int NUM_COL_NOM = 1;
-    private static final String CITY_PAYS = "pays";
+    public static final String CITY_PAYS = "pays";
     private static final int NUM_COL_PAYS = 2;
-    private static final String CITY_VENT = "vent";
+    public static final String CITY_VENT = "vent";
     private static final int NUM_COL_VENT = 3;
-    private static final String CITY_TEMP = "temperature";
+    public static final String CITY_TEMP = "temperature";
     private static final int NUM_COL_TEMP = 4;
-    private static final String CITY_PRES = "pression";
+    public static final String CITY_PRES = "pression";
     private static final int NUM_COL_PRES = 5;
-    private static final String CITY_DATE = "date";
+    public static final String CITY_DATE = "date";
     private static final int NUM_COL_DATE = 6;
-
-    private static final String CITY_TABLE_NAME = "City";
-
-    private SQLiteDatabase bdd;
-
-    private Bdd maBaseSQLite;
+    //Le nom de la table dans la base de donnée
+    public static final String CITY_TABLE_NAME = "City";
 
     private static final String CITY_TABLE_CREATE =
             "CREATE TABLE " + CITY_TABLE_NAME + " (" +
@@ -48,6 +43,21 @@ public class CityBDD
                     "UNIQUE (" +CITY_NOM +" "+ CITY_PAYS + " ));";
     public static final String CITY_TABLE_DROP = "DROP TABLE IF EXISTS " + CITY_TABLE_NAME + ";";
 
+
+    public static void onCreate(SQLiteDatabase database) {
+        database.execSQL(CITY_TABLE_CREATE);
+    }
+
+    public static void onUpgrade(SQLiteDatabase database, int oldVersion,
+                                 int newVersion) {
+        Log.w(CityBDD.class.getName(), "Upgrading database from version "
+                + oldVersion + " to " + newVersion
+                + ", which will destroy all old data");
+        database.execSQL("DROP TABLE IF EXISTS " + CITY_TABLE_NAME);
+        onCreate(database);
+    }
+
+    /*
     public CityBDD(Context context)
     {
         //On crée la BDD et sa table
@@ -68,13 +78,13 @@ public class CityBDD
         return bdd;
     }
 
-
+    */
 
     /**
      * La méthode ajouté permet de rajouter une ligna dans la base de donnée
      * @param city L'objet a enregistré dans la base de donnée
      */
-    public long ajouter(City city)
+    /*public long ajouter(City city)
     {
         ContentValues values = new ContentValues();
         values.put(CITY_NOM, city.getNom());
@@ -85,21 +95,23 @@ public class CityBDD
         values.put(CITY_DATE, "Null");
         return bdd.insert(CITY_TABLE_NAME, null, values);
     }
-
+*/
     /**
      * La méthode supprimé permet de supprimer une ville enregistré dans la base de donnée
      * @param city L'objet que l'on doit supprimer dans la base de données.
      */
+    /*
     public int supprimer(City city)
     {
         return bdd.delete(CITY_TABLE_NAME, CITY_KEY + " = " + city.getId(), null);
     }
-
+*/
     /**
      * La méthode permettant de mettre à jour la différentes valeurs d'une ville
      * dans la base de donnée.
      * @param city L'objet que l'on doit mettre à jour dans la base de donnée
      */
+  /*
     public int modifier(City city)
     {
         ContentValues values = new ContentValues();
@@ -110,12 +122,13 @@ public class CityBDD
         return bdd.update(CITY_TABLE_NAME, values, CityBDD.CITY_KEY + " = " + city.getId(),null);
 
     }
-
+*/
     /**
      * Méthode permettant de récupérer tout les informations enregistré dans la base
      * pour une ville.
      */
-    public City selectionner(City city)
+
+  /*  public City selectionner(City city)
     {
         Cursor c = bdd.query(CITY_TABLE_NAME, new String[] {CITY_KEY, CITY_NOM, CITY_PAYS, CITY_VENT, CITY_TEMP, CITY_PRES, CITY_DATE}, CITY_KEY + " = " + city.getId() , null, null, null, null);
         return cursorToCity(c);
@@ -136,12 +149,12 @@ public class CityBDD
         //On retourne la ville
         return city;
     }
-
+*/
     /**
      * Permet de sélectionner toutes les villes présente dans la base de donnée
      * @return La liste des ville présente dans la base de donnée
      */
-    public ArrayList<City> selectionnerAll()
+  /*  public ArrayList<City> selectionnerAll()
     {
         ArrayList<City> listCity = new ArrayList<City>();
         Cursor c = bdd.rawQuery("select * from " + CITY_TABLE_NAME,null);
@@ -152,5 +165,5 @@ public class CityBDD
         c.close();
         return listCity;
     }
-
+*/
 }

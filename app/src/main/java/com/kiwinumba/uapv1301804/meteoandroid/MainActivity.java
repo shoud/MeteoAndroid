@@ -3,8 +3,11 @@ package com.kiwinumba.uapv1301804.meteoandroid;
 import android.app.AlertDialog;
 import android.app.IntentService;
 import android.app.ListActivity;
+import android.app.LoaderManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
@@ -20,7 +23,8 @@ import java.util.List;
 /**
  * Permet de directement créer une activity qui fait une liste.
  */
-public class MainActivity extends ListActivity {
+public class MainActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor>
+{
 
     //Liste des villes
     private ArrayList<City> listCity;
@@ -173,6 +177,21 @@ public class MainActivity extends ListActivity {
         intent.putExtra("InfoCity",city);
         //Lancement de l'activity pour afficher les infos
         startActivity(intent);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
     /*
    private class RafraichirService extends IntentService

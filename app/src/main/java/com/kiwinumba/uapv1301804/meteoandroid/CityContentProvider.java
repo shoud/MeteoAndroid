@@ -3,6 +3,7 @@ package com.kiwinumba.uapv1301804.meteoandroid;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -12,179 +13,139 @@ import android.text.TextUtils;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 
 public class CityContentProvider extends ContentProvider
 {
-
-    //Lien util http://www.tutos-android.com/contentprovider-android
     //La base de donnnées
-    private Bdd bdd;
+    private CityBDD cityBDD;
     //Utilisé pour le UriMacher
-    private static final int WEATHER = 10;
-    private static final int WEATHER_PAYS_VILLE = 20;
+    private static final int WEATHER = 1;
+    private static final int WEATHER_VILLE = 2;
     //L'autorité du provider
     private static final String PROVIDER_AUTHORITY = "com.kiwinumba.uapv1301804.provider.meteoandroid";
-    private static final String BASE_PATH = "weather";
+    private static final String BASE_PATH = CityBDD.CITY_TABLE_NAME;
 
-    public static final Uri CONTENT_URI = Uri.parse("content://" + PROVIDER_AUTHORITY
-            + "/" + BASE_PATH);
+    public static final Uri CONTENT_URI = new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
+            .authority(PROVIDER_AUTHORITY)
+            .appendEncodedPath(CityBDD.CITY_TABLE_NAME)
+            .build();
 
-
-    public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
-            + "/weather";
-    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
-            + "/City";
-
-    private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    private static final UriMatcher uriMatcher  = new UriMatcher(UriMatcher.NO_MATCH);
     static {
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, BASE_PATH, WEATHER);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, BASE_PATH + "/*/*", WEATHER_PAYS_VILLE);
+        uriMatcher.addURI(PROVIDER_AUTHORITY, BASE_PATH, WEATHER);
+        uriMatcher.addURI(PROVIDER_AUTHORITY, BASE_PATH + "/*/*", WEATHER_VILLE);
     }
 
+    private static final int CITY_NOM = 1;
+    private static final int CITY_PAYS = 2;
 
     @Override
     public boolean onCreate()
     {
-        bdd = new Bdd(getContext());
-        return false ;
+        //Pour utiliser la base de donnée
+        cityBDD = new CityBDD(getContext());
+        return true ;
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-
-        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-        checkColumns(projection);
-
-        queryBuilder.setTables(CityBDD.CITY_TABLE_NAME);
-
-        int uriType = sURIMatcher.match(uri);
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder)
+    {
+        Cursor cursor;
+        int uriType = uriMatcher.match(uri);
         switch (uriType) {
             case WEATHER:
+                cursor = cityBDD.selectionnerTout();
                 break;
-            case WEATHER_PAYS_VILLE:
-                // adding the ID to the original query
-                queryBuilder.appendWhere(CityBDD.CITY_KEY + "="
-                        + uri.getLastPathSegment());
+            case WEATHER_VILLE:
+                List<String> pathSegments = uri.getPathSegments();
+                String nom = pathSegments.get(CITY_NOM);
+                String pays = pathSegments.get(CITY_PAYS);
+                cursor = cityBDD.selectionnerVille(nom,pays);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown URI: " + uri);
+                return null;
         }
-
-        SQLiteDatabase db = bdd.getWritableDatabase();
-        Cursor cursor = queryBuilder.query(db, projection, selection,
-                selectionArgs, null, null, sortOrder);
-        // make sure that potential listeners are getting notified
-        cursor.setNotificationUri(getContext().getContentResolver(), uri);
-
+        Context context = getContext();
+        ContentResolver contentResolver = null;
+        if(context != null)
+            contentResolver = context.getContentResolver();
+        if(contentResolver != null)
+            cursor.setNotificationUri(contentResolver, uri);
         return cursor;
     }
 
     @Override
-    public String getType(Uri uri) {
-        return null;
+    public String getType(Uri uri)
+    {
+        int uriType = uriMatcher.match(uri);
+        switch(uriType)
+        {
+            case WEATHER:
+                return ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + PROVIDER_AUTHORITY + ".weather";
+            case WEATHER_VILLE:
+                return ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + PROVIDER_AUTHORITY + ".weather";
+            default:
+                return null;
+        }
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values)
+    public Uri insert(Uri uri, ContentValues contentValues)
     {
-        int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase sqlDB = bdd.getWritableDatabase();
-        int rowsDeleted = 0;
-        long id = 0;
-        switch (uriType) {
-            case WEATHER:
-                id = sqlDB.insert(CityBDD.CITY_TABLE_NAME, null, values);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown URI: " + uri);
+        if (uriMatcher.match(uri) == WEATHER_VILLE)
+        {
+            List<String> pathSegments = uri.getPathSegments();
+            String nom = pathSegments.get(CITY_NOM);
+            String pays = pathSegments.get(CITY_PAYS);
+            return (cityBDD.ajouterVille(nom,pays) == -1) ? null :getUriVille(nom,pays);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
-        return Uri.parse(BASE_PATH + "/" + id);
+        return null;
     }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs)
     {
-        int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase sqlDB = bdd.getWritableDatabase();
-        int rowsDeleted = 0;
-        switch (uriType) {
-            case WEATHER:
-                rowsDeleted = sqlDB.delete(CityBDD.CITY_TABLE_NAME, selection,
-                        selectionArgs);
-                break;
-            case WEATHER_PAYS_VILLE:
-                String id = uri.getLastPathSegment();
-                if (TextUtils.isEmpty(selection)) {
-                    rowsDeleted = sqlDB.delete(CityBDD.CITY_TABLE_NAME,
-                            CityBDD.CITY_KEY + "=" + id,
-                            null);
-                } else {
-                    rowsDeleted = sqlDB.delete(CityBDD.CITY_TABLE_NAME,
-                            CityBDD.CITY_KEY + "=" + id
-                                    + " and " + selection,
-                            selectionArgs);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown URI: " + uri);
+        if (uriMatcher.match(uri) == WEATHER_VILLE)
+        {
+            List<String> pathSegments = uri.getPathSegments();
+            String nom = pathSegments.get(CITY_NOM);
+            String pays = pathSegments.get(CITY_PAYS);
+            return cityBDD.supprimerVille(nom, pays);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
-        return rowsDeleted;
+        return 0;
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs)
+    public int update(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs)
     {
-        int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase sqlDB = bdd.getWritableDatabase();
-        int rowsUpdated = 0;
-        switch (uriType) {
-            case WEATHER:
-                rowsUpdated = sqlDB.update(CityBDD.CITY_TABLE_NAME,
-                        values,
-                        selection,
-                        selectionArgs);
-                break;
-            case WEATHER_PAYS_VILLE:
-                String id = uri.getLastPathSegment();
-                if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated = sqlDB.update(CityBDD.CITY_TABLE_NAME,
-                            values,
-                            CityBDD.CITY_KEY + "=" + id,
-                            null);
-                } else {
-                    rowsUpdated = sqlDB.update(CityBDD.CITY_TABLE_NAME,
-                            values,
-                            CityBDD.CITY_KEY + "=" + id
-                                    + " and "
-                                    + selection,
-                            selectionArgs);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown URI: " + uri);
+        if (uriMatcher.match(uri) == WEATHER_VILLE)
+        {
+            List<String> pathSegments = uri.getPathSegments();
+            //Récupération du nom dans l'uri
+            String nom = pathSegments.get(CITY_NOM);
+            //Récupération du pays dans l'uri
+            String pays = pathSegments.get(CITY_PAYS);
+
+            Context context = getContext();
+            ContentResolver contentResolver = null;
+            if (context != null)
+                contentResolver = context.getContentResolver();
+            if (contentResolver != null)
+                contentResolver.notifyChange(uri, null);
+            return cityBDD.modifierVille(nom, pays, contentValues);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
-        return rowsUpdated;
+            return 0;
     }
 
-    private void checkColumns(String[] projection) {
-        String[] available = { CityBDD.CITY_KEY,
-                CityBDD.CITY_NOM,
-                CityBDD.CITY_PAYS,
-                CityBDD.CITY_VENT,
-                CityBDD.CITY_TEMP,
-                CityBDD.CITY_PRES,
-                CityBDD.CITY_DATE};
-        if (projection != null) {
-            HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
-            HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
-            // check if all columns which are requested are available
-            if (!availableColumns.containsAll(requestedColumns)) {
-                throw new IllegalArgumentException("Unknown columns in projection");
-            }
-        }
+    /**
+     * Méthode permettant de créer le lien rapidement pour un couple ville - pays
+     * @param nom Le nom de la ville
+     * @param pays Le nom du pays
+     * @return L'uri créer pour utiliser le provider
+     */
+    public static Uri getUriVille(String nom, String pays) {
+        return CityContentProvider.CONTENT_URI.buildUpon().appendPath(nom).appendPath(pays).build();
     }
 }

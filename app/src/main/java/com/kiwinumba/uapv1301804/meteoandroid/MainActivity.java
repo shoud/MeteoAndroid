@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
@@ -18,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,8 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
 {
 
     //Liste des villes
-    private ArrayList<City> listCity;
+    private ArrayList<City> listCity = new ArrayList<City>();
+    private SimpleCursorAdapter simpleCursorAdapter;
 
     //Le code de la requête d'ajouter un résulta
     static final int PICK_AJOUTER_REQUEST = 36;
@@ -37,36 +40,39 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        new CityBDD(this);
 
-        //Création de l'affichage des villes
-        ArrayAdapter<City> cityArrayAdapter = new ArrayAdapter<City>(this,android.R.layout.simple_list_item_1,android.R.id.text1,listCity);
-        setListAdapter(cityArrayAdapter);
+       simpleCursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null,
+                new String[]{CityBDD.CITY_NOM, CityBDD.CITY_PAYS},
+                new int[]{android.R.id.text1, android.R.id.text2}, 0);
+        setListAdapter(simpleCursorAdapter);
 
+        getLoaderManager().initLoader(0, null, this);
 
         //Permet de supprimer une ville et détectant un clique long
-        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
-        {
+        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l)
-            {
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 //Récupération de la ville choisie
-                final City city = listCity.get(i);
+                final String nom = ((TextView) view.findViewById(android.R.id.text1)).getText().toString();
+                final String pays = ((TextView) view.findViewById(android.R.id.text2)).getText().toString();
                 //On créer une boite de dialogue
                 new AlertDialog.Builder(MainActivity.this).setTitle("Suppression")
                         //Le message de la boite de dialogue
-                        .setMessage("Voulez vous supprimer " + city.getNom() + " ?")
-                        //L'icone de la boite de dialogue
+                        .setMessage("Voulez vous supprimer " + nom + " ?")
+                                //L'icone de la boite de dialogue
                         .setIcon(android.R.drawable.ic_dialog_alert)
-                        //Le bouton ok
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
-                        {
+                                //Le bouton ok
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int whichButton)
-                            {
-                                //Suppression de la ville dans la liste
-                                listCity.remove(city);
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                //Suppression dans la base de donnée
+
+                                Uri uri = CityContentProvider.getUriVille(nom, pays);
+                                //Suppression de la ville
+                                getContentResolver().delete(uri, null, null);
                                 //Rafraichissement de la liste
-                                ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
+                                getLoaderManager().restartLoader(0, null, MainActivity.this);
                                 //Le bouton annuler on quite la boite de dialogue
                             }
                         }).setNegativeButton(android.R.string.no, null).show();
@@ -101,15 +107,22 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
         }
         else if(id == R.id.rafraichir)
         {
-            //On lance le téléchargement des donnée en tache de fond
-            //new RafraichirTask().execute(listCity);
-            Intent mServiceIntent = new Intent(this, MeteoUpDate.class);
-            mServiceIntent.putExtra("Ville",listCity.get(0));
-
-
-            startService(mServiceIntent);
+            Uri uri = CityContentProvider.CONTENT_URI.buildUpon().build();
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext())
+                rafarichir(cursor.getString(cursor.getColumnIndex(CityBDD.CITY_NOM)),cursor.getString(cursor.getColumnIndex(CityBDD.CITY_PAYS)));
+            cursor.close();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    void rafarichir(String nom, String pays)
+    {
+        //On lance le téléchargement des donnée en tache de fond
+        Intent mServiceIntent = new Intent(this, MeteoUpDate.class);
+        mServiceIntent.putExtra("NOM",nom);
+        mServiceIntent.putExtra("PAYS",pays);
+        startService(mServiceIntent);
     }
 
     /**
@@ -121,31 +134,16 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //Si on récupérer les données de l'activity Ajouter.
-        if (requestCode == PICK_AJOUTER_REQUEST) {
+        if (requestCode == PICK_AJOUTER_REQUEST)
+        {
             //On vérifie si la requet c'est bien passé
-            if (resultCode == RESULT_OK) {
-                City city = (City)data.getSerializableExtra("VilleAjouter");
-                //On vérifie si la ville n'a pas déjà été ajouté
-                for(int i=0; i<listCity.size(); i++)
-                    //Si la ville est déjà dans la liste
-                    if(listCity.get(i).getNom().toLowerCase().equals(city.getNom().toLowerCase()))
-                    {
-                        //Si le pays est le même
-                        if(listCity.get(i).getPays().toLowerCase().equals(city.getPays().toLowerCase()))
-                        {
-                            //Message signifiant à l'utilisateur que la ville est déjà présente
-                            Toast.makeText(getApplicationContext(), "La ville existe déjà", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                    }
-                //On rajoute la nouvelle ville à la liste de ville
-                listCity.add(city);
-                //On rafraichie la liste de ville
-                ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
-                //On met à jour les valeurs
-                //new RafraichirTask().execute(listCity);
-                //Affichage à l'utilisateur que la ville a bien été ajouté
-                Toast.makeText(getApplicationContext(), city.getNom() + " de " + city.getPays() + " ajouté", Toast.LENGTH_SHORT).show();
+            if (resultCode == RESULT_OK)
+            {
+                String nom = data.getStringExtra("VILLE");
+                String pays = data.getStringExtra("PAYS");
+                rafarichir(nom,pays);
+                //On met à jour la liste de ville
+                getLoaderManager().restartLoader(0, null, this);
             }
         }
     }
@@ -163,9 +161,10 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
         //Préparation à la création d'une activity
         Intent intent = new Intent(this, CityView.class);
         //Récupération de la ville choisie
-        City city = listCity.get(position);
+        final String nom = ((TextView) v.findViewById(android.R.id.text1)).getText().toString();
+        final String pays = ((TextView) v.findViewById(android.R.id.text2)).getText().toString();
         //Permet d'envoyer la ville à la nouvelle activity
-        intent.putExtra("InfoCity",city);
+        intent.putExtra("InfoCity", CityContentProvider.getUriVille(nom, pays));
         //Lancement de l'activity pour afficher les infos
         startActivity(intent);
     }
@@ -186,36 +185,4 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
     public void onLoaderReset(Loader<Cursor> loader) {
 
     }
-    /*
-   private class RafraichirService extends IntentService
-    {
-        public RafraichirService()
-        {
-            super("RafraichirService");
-        }
-
-        @Override
-        protected void onHandleIntent(Intent intent)
-        {
-            Toast.makeText(getApplicationContext(), "Avant la mise à jour", Toast.LENGTH_SHORT).show();
-            MeteoUpDate.upDateInfo(listCity.get(0));
-            Toast.makeText(getApplicationContext(), "Après la mise à jour", Toast.LENGTH_SHORT).show();
-        }
-
-
-
-        @Override
-        protected Void doInBackground(List<City>... villes)
-        {
-            //Mise à jour des informations dans la liste de ville
-            MeteoUpDate.upDateInfo(villes[0]);
-            return null;
-        }
-
-
-        @Override
-        protected void onPostExecute(Void rien) {
-            Toast.makeText(getApplicationContext(), "Les donnée ont été mise à jour", Toast.LENGTH_SHORT).show();
-        }
-    }*/
 }

@@ -1,7 +1,10 @@
 package com.kiwinumba.uapv1301804.meteoandroid;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,7 +22,7 @@ public class AddCityActivity extends Activity {
     //Le nom du pays où réside la ville
     String pays = null;
     //Permet de faire des enregistrement dans la base de donnée
-    CityBDD cityBDD;// = new CityDAO(getApplicationContext());
+    private Uri cityUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,17 +52,14 @@ public class AddCityActivity extends Activity {
             Toast.makeText(getApplicationContext(), "Pas de Pays", Toast.LENGTH_SHORT).show();
         else
         {
-            //Création du nouveau objet ville
-            City city = new City(ville, pays);
-            //Enregistrement du nouvelle objet dans la base de donnée
-            cityBDD = new CityBDD(getApplicationContext());
-            cityBDD.open();
-            cityBDD.ajouter(city);
-            cityBDD.close();
+            //Enregistrement dans la base de donnée
+            getContentResolver().insert(CityContentProvider.getUriVille(ville,pays),null);
             //Création de l'objet à retourner
             Intent intent = new Intent();
-            //On retourne l'objet city
-            intent.putExtra("VilleAjouter", city);
+            //Le nom de la ville rajouté
+            intent.putExtra("VILLE", ville);
+            //Le nom du pays de la ville rajouté
+            intent.putExtra("PAYS", pays);
             //On dit que la requet est ok
             setResult(Activity.RESULT_OK, intent);
             //Fermeture de l'activity

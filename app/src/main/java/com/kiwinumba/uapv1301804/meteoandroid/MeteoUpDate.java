@@ -1,6 +1,7 @@
 package com.kiwinumba.uapv1301804.meteoandroid;
 
 import android.app.IntentService;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.util.Log;
 
@@ -24,7 +25,6 @@ public class MeteoUpDate extends IntentService
     private static final String encodage = "UTF-8";
     //Enum pour rendre plus claire la lecture du tableau de données
     private enum Donnee{VENT, TEMP, PRESSION, DATE}
-    private City city;
 
     public MeteoUpDate()
     {
@@ -43,17 +43,12 @@ public class MeteoUpDate extends IntentService
         URL url;
         URLConnection urlConnection;
         InputStream inputStream = null;
-        CityBDD cityBDD = new CityBDD(getApplicationContext());
 
         try
         {
             //Récupération de la ville choisie
-            city = (City)intent.getSerializableExtra("Ville");
-            Log.i("MeteoUpDate",city.toString());
-            //Récupération du nom de la ville
-            String nom = URLEncoder.encode(city.getNom(),encodage);
-            //Récupération du nom du pays
-            String pays = URLEncoder.encode(city.getPays(),encodage);
+            String nom = intent.getStringExtra("NOM");
+            String pays = intent.getStringExtra("PAYS");
             //Création de le l'url avec la requet
             url = new URL(String.format(URLServiceWeb,nom,pays));
             //On lance la requet
@@ -65,26 +60,24 @@ public class MeteoUpDate extends IntentService
             //Lecture des valeur du tableau
             if (infos.size() == 4)
             {
+                ContentValues values = new ContentValues();
                 //Mise à jour de la vitesse et de la direction du vent
-                city.setVitesseVent(infos.get(Donnee.VENT.ordinal()));
-                Log.i("MeteoUpDate", "Vent = " + infos.get(Donnee.VENT.ordinal()));
+                values.put(CityBDD.CITY_VENT, infos.get(Donnee.VENT.ordinal()));
                 //Mise à jour de la température
-                city.setTempAir(infos.get(Donnee.TEMP.ordinal()));
-                Log.i("MeteoUpDate", "Temp = " + city.getTempAir());
+                values.put(CityBDD.CITY_TEMP, infos.get(Donnee.TEMP.ordinal()));
                 //Mise à jour de la pression
-                city.setPression(infos.get(Donnee.PRESSION.ordinal()));
-                Log.i("MeteoUpDate", "Pression = " + infos.get(Donnee.PRESSION.ordinal()));
+                values.put(CityBDD.CITY_PRES, infos.get(Donnee.PRESSION.ordinal()));
                 //Mise à jour de la date
-                city.setDate(infos.get(Donnee.DATE.ordinal()));
-                Log.i("MeteoUpDate", "Date = " + infos.get(Donnee.DATE.ordinal()));
-                cityBDD.modifier(city);
+                values.put(CityBDD.CITY_DATE, infos.get(Donnee.DATE.ordinal()));
+                //Mettre à jour la base de donnée
+                getContentResolver().update(CityContentProvider.getUriVille(nom,pays), values, null, null);
             }
 
         }
         catch (IOException e)
         {
             //Affichage de l'érreur dans le log
-            Log.e("Service Erreur : ", city + " : " + e.toString());
+            Log.e("Service Erreur : ", e.toString());
         }
 
         try
@@ -95,7 +88,7 @@ public class MeteoUpDate extends IntentService
         catch (IOException e)
         {
             //Affichage de l'érreur dans le log
-            Log.e("Service Erreur :", city + " : " + e.toString());
+            Log.e("Service Erreur :", e.toString());
         }
     }
 

@@ -1,10 +1,7 @@
 package com.kiwinumba.uapv1301804.meteoandroid;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,8 +18,6 @@ public class AddCityActivity extends Activity {
     String ville = null;
     //Le nom du pays où réside la ville
     String pays = null;
-    //Permet de faire des enregistrement dans la base de donnée
-    private Uri cityUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

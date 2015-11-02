@@ -29,12 +29,10 @@ import java.util.List;
  */
 public class MainActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor>
 {
-
-    //Liste des villes
-    private ArrayList<City> listCity = new ArrayList<City>();
+    //Permet de récupérer la liste de ville dans la base de donnée
     private SimpleCursorAdapter simpleCursorAdapter;
 
-    //Le code de la requête d'ajouter un résulta
+    //Le code de la requête d'ajouter un résultat
     static final int PICK_AJOUTER_REQUEST = 36;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,9 +65,7 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
                             @Override
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 //Suppression dans la base de donnée
-
                                 Uri uri = CityContentProvider.getUriVille(nom, pays);
-                                //Suppression de la ville
                                 getContentResolver().delete(uri, null, null);
                                 //Rafraichissement de la liste
                                 getLoaderManager().restartLoader(0, null, MainActivity.this);
@@ -107,8 +103,11 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
         }
         else if(id == R.id.rafraichir)
         {
+            //Uri pour récupérer l'ensemble des villes de la base de donnée
             Uri uri = CityContentProvider.CONTENT_URI.buildUpon().build();
+            //Récupétation du curseur
             Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            //On parcour tout les enregistrement pour mettre à jour toutes les villes
             for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext())
                 rafarichir(cursor.getString(cursor.getColumnIndex(CityBDD.CITY_NOM)),cursor.getString(cursor.getColumnIndex(CityBDD.CITY_PAYS)));
             cursor.close();
@@ -120,16 +119,16 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
     {
         //On lance le téléchargement des donnée en tache de fond
         Intent mServiceIntent = new Intent(this, MeteoUpDate.class);
+        //Le nom de la ville à mettre à jour
         mServiceIntent.putExtra("NOM",nom);
+        //Le nom du pays à mettre à jour
         mServiceIntent.putExtra("PAYS",pays);
+        //Lancement du service
         startService(mServiceIntent);
     }
 
     /**
      * La méthode permettant de récupérer le résulat d'une activity
-     * @param requestCode
-     * @param resultCode
-     * @param data
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -139,8 +138,11 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
             //On vérifie si la requet c'est bien passé
             if (resultCode == RESULT_OK)
             {
+                //Récupération du nom de la ville rajouté
                 String nom = data.getStringExtra("VILLE");
+                //Récupération du nom du pays de la ville rajouté
                 String pays = data.getStringExtra("PAYS");
+                //Lancement d'un service pour la nouvelle ville
                 rafarichir(nom,pays);
                 //On met à jour la liste de ville
                 getLoaderManager().restartLoader(0, null, this);
@@ -150,10 +152,6 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
 
     /**
      * Détection d'un simple clique sur une ville
-     * @param l
-     * @param v
-     * @param position
-     * @param id
      */
     @Override
     public void onListItemClick(ListView l, View v, int position, long id)

@@ -69,6 +69,7 @@ public class CityView extends Activity implements LoaderManager.LoaderCallbacks<
             textView = (TextView)findViewById(R.id.tvDate);
             //Mise à jour de la date
             textView.setText(cursor.getString(cursor.getColumnIndex(CityBDD.CITY_DATE)));
+            cursor.close();
         } else
             finish();
     }

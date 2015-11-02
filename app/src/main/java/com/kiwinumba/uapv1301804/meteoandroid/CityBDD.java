@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
- * Created by thomas on 03/10/2015.
+ * Classe permettant de gérer la base de donnée de villes
  */
 public class CityBDD extends SQLiteOpenHelper
 {

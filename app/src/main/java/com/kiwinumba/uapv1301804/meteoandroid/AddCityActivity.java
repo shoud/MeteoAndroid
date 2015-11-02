@@ -9,9 +9,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-/**
- * Classe permettant de rajouter une ville
- */
+
 public class AddCityActivity extends Activity {
 
     //Le nom de la ville
@@ -27,7 +25,6 @@ public class AddCityActivity extends Activity {
 
     /**
      * Méthode lancé lors de l'appui sur le bouton sauvegarder
-     * @param view
      */
     public void sauvegarder(View view)
     {
